@@ -29,6 +29,8 @@ def main(args):
     onscreen_render = args['onscreen_render']
     inject_noise = False
     render_cam_name = 'angle'
+    # render_cam_name = 'top'
+
 
     if not os.path.isdir(dataset_dir):
         os.makedirs(dataset_dir, exist_ok=True)

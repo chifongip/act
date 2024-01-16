@@ -167,6 +167,9 @@ def eval_bc(config, ckpt_name, save_episode=True):
     policy = make_policy(policy_class, policy_config)
     loading_status = policy.load_state_dict(torch.load(ckpt_path))
     print(loading_status)
+    # print("Model's state_dict:")
+    # for param_tensor in policy.state_dict():
+    #     print(param_tensor, "\t", policy.state_dict()[param_tensor].size())
     policy.cuda()
     policy.eval()
     print(f'Loaded: {ckpt_path}')
@@ -268,6 +271,8 @@ def eval_bc(config, ckpt_name, save_episode=True):
                 raw_action = raw_action.squeeze(0).cpu().numpy()
                 action = post_process(raw_action)
                 target_qpos = action
+
+                # print(target_qpos)
 
                 ### step the environment
                 ts = env.step(target_qpos)
