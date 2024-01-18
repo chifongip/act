@@ -23,6 +23,7 @@ import IPython
 e = IPython.embed
 
 BOX_POSE = [None] # to be changed from outside
+BOWL1_POSE = [None]
 
 def make_sim_env(task_name):
     """
@@ -121,8 +122,9 @@ class BimanualViperXTask(base.Task):
         obs['env_state'] = self.get_env_state(physics)
         obs['images'] = dict()
         obs['images']['top'] = physics.render(height=480, width=640, camera_id='top')
-        obs['images']['angle'] = physics.render(height=480, width=640, camera_id='angle')
+        # obs['images']['angle'] = physics.render(height=480, width=640, camera_id='angle')
         # obs['images']['vis'] = physics.render(height=480, width=640, camera_id='front_close')
+        obs['images']['front_close'] = physics.render(height=480, width=640, camera_id='front_close')
         # obs['images']['left_wrist'] = physics.render(height=480, width=640, camera_id='left_wrist')
         obs['images']['right_wrist'] = physics.render(height=480, width=640, camera_id='right_wrist')
 
@@ -146,13 +148,15 @@ class CubePnPTask(BimanualViperXTask):
             physics.named.data.qpos[:16] = START_ARM_POSE
             np.copyto(physics.data.ctrl, START_ARM_POSE)
             assert BOX_POSE[0] is not None
-            physics.named.data.qpos[-7:] = BOX_POSE[0]
+            physics.named.data.qpos[16 : 16 + 7] = BOX_POSE[0]
             # print(f"{BOX_POSE=}")
+            assert BOWL1_POSE[0] is not None
+            physics.named.data.qpos[23 : 23 + 7] = BOWL1_POSE[0]
         super().initialize_episode(physics)
 
     @staticmethod
     def get_env_state(physics):
-        env_state = physics.data.qpos.copy()[16:]
+        env_state = physics.data.qpos.copy()[16 : 16 + 14]
         return env_state
 
     def get_reward(self, physics):
@@ -170,7 +174,10 @@ class CubePnPTask(BimanualViperXTask):
         # touch_left_gripper = ("red_box", "vx300s_left/10_left_gripper_finger") in all_contact_pairs
         touch_right_gripper = ("red_box", "vx300s_right/10_right_gripper_finger") in all_contact_pairs
         touch_table = ("red_box", "table") in all_contact_pairs
-        touch_bowl = ("red_box", "bowl") in all_contact_pairs
+        # touch_bowl = ("red_box", "bowl_1") in all_contact_pairs
+        # touch_bowl = any(("red_box", "bowl_" + str(bowl)) in all_contact_pairs for bowl in range(1, 4))
+        touch_bowl = any(("red_box", "bowl_white" + str(bowl)) in all_contact_pairs for bowl in range(0, 12))
+        
 
         reward = 0
         if touch_right_gripper:
@@ -316,6 +323,7 @@ def test_sim_teleop():
     from interbotix_xs_modules.arm import InterbotixManipulatorXS
 
     BOX_POSE[0] = [0.2, 0.5, 0.05, 1, 0, 0, 0]
+    BOWL1_POSE[0] = [0, 0.8, 0.04, 1, 0, 0, 0]
 
     # source of data
     master_bot_left = InterbotixManipulatorXS(robot_model="wx250s", group_name="arm", gripper_name="gripper",

@@ -12,7 +12,7 @@ import h5py
 
 from pnp_constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN, SIM_TASK_CONFIGS
 from pnp_ee_sim_env import make_ee_sim_env
-from pnp_sim_env import make_sim_env, BOX_POSE
+from pnp_sim_env import make_sim_env, BOX_POSE, BOWL1_POSE
 from pnp_scripted_policy import PickAndTransferPolicy, InsertionPolicy, PnPPolicy
 
 import IPython
@@ -33,7 +33,7 @@ def main(args):
     num_episodes = args['num_episodes']
     onscreen_render = args['onscreen_render']
     inject_noise = False
-    render_cam_name = 'angle'
+    render_cam_name = 'front_close'
     # render_cam_name = 'top'
 
 
@@ -100,7 +100,9 @@ def main(args):
         # setup the environment
         print('Replaying joint commands')
         env = make_sim_env(task_name)
-        BOX_POSE[0] = subtask_info # make sure the sim_env has the same object configurations as ee_sim_env
+        # print(subtask_info)
+        BOX_POSE[0] = subtask_info[0:7] # make sure the sim_env has the same object configurations as ee_sim_env
+        BOWL1_POSE[0] = subtask_info[7:14]
         ts = env.reset()
 
         episode_replay = [ts]

@@ -73,9 +73,15 @@ class PnPPolicy(BasePolicy):
         init_mocap_pose_left = ts_first.observation['mocap_pose_left']
 
         box_info = np.array(ts_first.observation['env_state'])
-        box_xyz = box_info[:3]
-        box_quat = box_info[3:]
+        # print(box_info)
+        
+        box_xyz = box_info[0:3]
+        box_quat = box_info[3:7]
         # print(f"Generate trajectory for {box_xyz=}")
+
+        bowl_xyz = box_info[7:10]
+        bowl_quat = box_info[10:14]
+        # print(f"Generate trajectory for {bowl_xyz=}")
 
         gripper_pick_quat = Quaternion(init_mocap_pose_right[3:])
         gripper_pick_quat = gripper_pick_quat * Quaternion(axis=[0.0, 1.0, 0.0], degrees=-60)
@@ -84,7 +90,6 @@ class PnPPolicy(BasePolicy):
 
         meet_xyz = np.array([0, 0.5, 0.25])
 
-        bowl_xyz = np.array([0, 0.8, 0.1])
 
         self.left_trajectory = [
             {"t": 0, "xyz": init_mocap_pose_left[:3], "quat": init_mocap_pose_left[3:], "gripper": 0}, # sleep
