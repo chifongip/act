@@ -3,7 +3,6 @@
 
     <asset>
         <mesh file="tabletop.stl" name="tabletop" scale="0.001 0.001 0.001"/>
-        <mesh name="bowl" file="bowl.stl" scale="1 1 1"/>
     </asset>
 
     <visual>
@@ -22,19 +21,6 @@
         <body name="table" pos="0 .6 0">
             <geom group="1" mesh="tabletop" pos="0 0 0" type="mesh" conaffinity="1" contype="1" name="table" rgba="0.2 0.2 0.2 1" />
         </body>
-
-        <body name="bowl" pos="0 .8 .04">
-            <geom group="1" mesh="bowl" pos="0 0 0" type="mesh" conaffinity="1" contype="1" name="bowl" rgba="1 1 1 1" />
-        </body>
-
-        <body name="bowl_2" pos=".2 .8 .04">
-            <geom group="1" mesh="bowl" pos="0 0 0" type="mesh" conaffinity="1" contype="1" name="bowl_2" rgba="0 0 1 1" />
-        </body>
-
-        <body name="bowl_3" pos="-.2 .8 .04">
-            <geom group="1" mesh="bowl" pos="0 0 0" type="mesh" conaffinity="1" contype="1" name="bowl_3" rgba="0 1 0 1" />
-        </body>
-
         <body name="midair" pos="0 .6 0.2">
             <site pos="0 0 0" size="0.01" type="sphere" name="midair" rgba="1 0 0 0"/>
         </body>

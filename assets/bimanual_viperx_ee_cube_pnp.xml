@@ -1,7 +1,8 @@
 <mujoco>
-    <include file="scene.xml"/>
+    <include file="scene_pnp.xml"/>
     <include file="vx300s_dependencies.xml"/>
-
+    <include file="bowl/assets.xml" />
+    <include file="common.xml" />
     <equality>
         <weld body1="mocap_left" body2="vx300s_left/gripper_link" solref="0.01 1" solimp=".25 .25 0.001" />
         <weld body1="mocap_right" body2="vx300s_right/gripper_link" solref="0.01 1" solimp=".25 .25 0.001" />
@@ -29,6 +30,12 @@
             <geom condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001" pos="0 0 0" size="0.02 0.02 0.02" type="box" name="red_box" rgba="1 0 0 1" />
         </body>
 
+        <body name="bowl_1" pos="0 .8 .04">
+            <joint name="bowl_1_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002" />
+            <include file="bowl/bowl_white.xml" />
+        </body>
+
     </worldbody>
 
     <actuator>
@@ -41,7 +48,7 @@
     </actuator>
 
     <keyframe>
-        <key qpos="0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0.2 0.5 0.05 1 0 0 0"/>
+        <key qpos="0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0.2 0.5 0.05 1 0 0 0  0 .8 .04 1 0 0 0"/>
     </keyframe>
 
 
