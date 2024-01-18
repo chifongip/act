@@ -20,7 +20,8 @@ e = IPython.embed
 # BOX_POSE = [None] # to be changed from outside
 
 if __name__ == '__main__':
-    xml_path = os.path.join(XML_DIR, f'bimanual_viperx_cube_pnp.xml')
+    xml_path = os.path.join(XML_DIR, f'bimanual_viperx_towel.xml')
+    # xml_path = os.path.join('/home/lscm/aloha_ws/src/act/assets/towel.xml')
     m = mujoco.MjModel.from_xml_path(xml_path)
     d = mujoco.MjData(m)
     mujoco.viewer.launch(m, d)
