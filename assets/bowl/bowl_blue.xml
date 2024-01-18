@@ -1,0 +1,22 @@
+<mujocoinclude model="">
+<!-- =================================================
+    Copyright 2019 Vikash Kumar
+    Model   :: Objects (MuJoCoV2.0)
+    Author  :: Vikash Kumar (vikashplus@gmail.com), Sudeep Dasari (sdasari@andrew.cmu.edu )
+    Details :: https://github.com/vikashplus/object_sim
+    License :: Under Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+====================================================== -©vk©-->
+    <!-- <geom name="bowl_visual" mesh="bowl"/> -->
+    <geom name="bowl_blue0" mesh="contact0" class="blue"/>
+    <geom name="bowl_blue1" mesh="contact1" class="blue"/>
+    <geom name="bowl_blue2" mesh="contact2" class="blue"/>
+    <geom name="bowl_blue3" mesh="contact3" class="blue"/>
+    <geom name="bowl_blue4" mesh="contact4" class="blue"/>
+    <geom name="bowl_blue5" mesh="contact5" class="blue"/>
+    <geom name="bowl_blue6" mesh="contact6" class="blue"/>
+    <geom name="bowl_blue7" mesh="contact7" class="blue"/>
+    <geom name="bowl_blue8" mesh="contact8" class="blue"/>
+    <geom name="bowl_blue9" mesh="contact9" class="blue"/>
+    <geom name="bowl_blue10" mesh="contact10" class="blue"/>
+    <geom name="bowl_blue11" mesh="contact11" class="blue"/>
+</mujocoinclude>
