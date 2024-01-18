@@ -1,0 +1,37 @@
+<!-- Copyright 2021 DeepMind Technologies Limited
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<mujoco model="2D grid with pins">
+  <include file="scene_pnp.xml"/>
+  <include file="vx300s_dependencies.xml"/>
+
+  <size memory="10M"/>
+
+  <worldbody>
+    <!-- <include file="vx300s_left.xml" />
+    <include file="vx300s_right.xml" /> -->
+    <body pos="0 0 0">
+      <!-- <joint name="towel_joint" type="free" frictionloss="0.01" /> -->
+      <!-- <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002" /> -->
+      <composite type="grid" count="5 9 1" spacing="0.1" offset="0 0 1">
+        <!-- <skin rgba=".6 .1 .6 1" inflate="0.001" subgrid="3"/> -->
+        <skin material="mattowel" texcoord="true" inflate="0.02" subgrid="3"/>
+        <pin coord="0 0"/>
+        <pin coord="4 0"/>
+        <geom size="0.02"/>
+      </composite>
+    </body>
+  </worldbody>
+</mujoco>
