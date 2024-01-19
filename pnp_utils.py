@@ -130,6 +130,20 @@ def load_data(dataset_dir, num_episodes, camera_names, batch_size_train, batch_s
 
 ### env utils
 
+def sample_towel_pose():
+    x_range = [-0.1, 0.1]
+    y_range = [0.45, 0.75]
+    z_range = [0.01, 0.01]
+    # x_range = [0, 0]
+    # y_range = [0.6, 0.6]
+    # z_range = [0.01, 0.01]
+
+    ranges = np.vstack([x_range, y_range, z_range])
+    towel_position = np.random.uniform(ranges[:, 0], ranges[:, 1])
+
+    towel_quat = np.array([1, 0, 0, 0])
+    return np.concatenate([towel_position, towel_quat])
+
 def sample_bowl_pose():
     x_range = [-0.15, 0.15]
     y_range = [0.75, 0.85]

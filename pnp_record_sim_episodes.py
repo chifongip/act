@@ -12,8 +12,8 @@ import h5py
 
 from pnp_constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN, SIM_TASK_CONFIGS
 from pnp_ee_sim_env import make_ee_sim_env
-from pnp_sim_env import make_sim_env, BOX_POSE, BOWL1_POSE
-from pnp_scripted_policy import PickAndTransferPolicy, InsertionPolicy, PnPPolicy
+from pnp_sim_env import make_sim_env, BOX_POSE, BOWL1_POSE, TOWEL_POSE
+from pnp_scripted_policy import PickAndTransferPolicy, InsertionPolicy, PnPPolicy, TowelPolicy
 
 import IPython
 e = IPython.embed
@@ -33,8 +33,8 @@ def main(args):
     num_episodes = args['num_episodes']
     onscreen_render = args['onscreen_render']
     inject_noise = False
-    render_cam_name = 'front_close'
-    # render_cam_name = 'top'
+    # render_cam_name = 'angle'
+    render_cam_name = 'cam_high'
 
 
     if not os.path.isdir(dataset_dir):
@@ -48,6 +48,8 @@ def main(args):
         policy_cls = InsertionPolicy
     elif task_name == 'sim_cube_pnp':
         policy_cls = PnPPolicy
+    elif task_name == 'sim_towel':
+        policy_cls = TowelPolicy
     else:
         raise NotImplementedError
 
@@ -76,7 +78,11 @@ def main(args):
 
         episode_return = np.sum([ts.reward for ts in episode[1:]])
         episode_max_reward = np.max([ts.reward for ts in episode[1:]])
-        if episode_max_reward == env.task.max_reward:
+        # if episode_max_reward == env.task.max_reward:
+        #     print(f"{episode_idx=} Successful, {episode_return=}")
+        # else:
+        #     print(f"{episode_idx=} Failed")
+        if episode_return >= 250:
             print(f"{episode_idx=} Successful, {episode_return=}")
         else:
             print(f"{episode_idx=} Failed")
@@ -101,8 +107,13 @@ def main(args):
         print('Replaying joint commands')
         env = make_sim_env(task_name)
         # print(subtask_info)
-        BOX_POSE[0] = subtask_info[0:7] # make sure the sim_env has the same object configurations as ee_sim_env
-        BOWL1_POSE[0] = subtask_info[7:14]
+
+        if task_name == 'sim_cube_pnp':
+            BOX_POSE[0] = subtask_info[0:7] # make sure the sim_env has the same object configurations as ee_sim_env
+            BOWL1_POSE[0] = subtask_info[7:14]
+        elif task_name == 'sim_towel':
+            TOWEL_POSE[0] = subtask_info[0:7]
+        
         ts = env.reset()
 
         episode_replay = [ts]
@@ -121,7 +132,13 @@ def main(args):
 
         episode_return = np.sum([ts.reward for ts in episode_replay[1:]])
         episode_max_reward = np.max([ts.reward for ts in episode_replay[1:]])
-        if episode_max_reward == env.task.max_reward:
+        # if episode_max_reward == env.task.max_reward:
+        #     success.append(1)
+        #     print(f"{episode_idx=} Successful, {episode_return=}")
+        # else:
+        #     success.append(0)
+        #     print(f"{episode_idx=} Failed")
+        if episode_return >= 250:
             success.append(1)
             print(f"{episode_idx=} Successful, {episode_return=}")
         else:

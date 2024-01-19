@@ -14,7 +14,7 @@ from pnp_constants import PUPPET_GRIPPER_POSITION_UNNORMALIZE_FN
 from pnp_constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN
 from pnp_constants import PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN
 
-from pnp_utils import sample_box_pose, sample_insertion_pose, sample_bowl_pose
+from pnp_utils import sample_box_pose, sample_insertion_pose, sample_bowl_pose, sample_towel_pose
 from dm_control import mujoco
 from dm_control.rl import control
 from dm_control.suite import base
@@ -57,6 +57,12 @@ def make_ee_sim_env(task_name):
         xml_path = os.path.join(XML_DIR, f'bimanual_viperx_ee_cube_pnp.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
         task = CubePnPEETask(random=False)
+        env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
+                                  n_sub_steps=None, flat_observation=False)
+    elif 'sim_towel' in task_name:
+        xml_path = os.path.join(XML_DIR, f'bimanual_viperx_ee_towel.xml')
+        physics = mujoco.Physics.from_xml_path(xml_path)
+        task = TowelEETask(random=False)
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     else:
@@ -147,15 +153,19 @@ class BimanualViperXEETask(base.Task):
         obs['qvel'] = self.get_qvel(physics)
         obs['env_state'] = self.get_env_state(physics)
         obs['images'] = dict()
-        obs['images']['top'] = physics.render(height=480, width=640, camera_id='top')
+        # obs['images']['top'] = physics.render(height=480, width=640, camera_id='top')
         # obs['images']['angle'] = physics.render(height=480, width=640, camera_id='angle')
         # obs['images']['vis'] = physics.render(height=480, width=640, camera_id='front_close')
-        obs['images']['front_close'] = physics.render(height=480, width=640, camera_id='front_close')
+        # obs['images']['front_close'] = physics.render(height=480, width=640, camera_id='front_close')
         # obs['images']['left_wrist'] = physics.render(height=480, width=640, camera_id='left_wrist')
-        obs['images']['right_wrist'] = physics.render(height=480, width=640, camera_id='right_wrist')
+        # obs['images']['right_wrist'] = physics.render(height=480, width=640, camera_id='right_wrist')
         # used in scripted policy to obtain starting pose
         obs['mocap_pose_left'] = np.concatenate([physics.data.mocap_pos[0], physics.data.mocap_quat[0]]).copy()
         obs['mocap_pose_right'] = np.concatenate([physics.data.mocap_pos[1], physics.data.mocap_quat[1]]).copy()
+
+        obs['images']['cam_high'] = physics.render(height=480, width=640, camera_id='cam_high')
+        obs['images']['cam_left_wrist'] = physics.render(height=480, width=640, camera_id='cam_left_wrist')
+        obs['images']['cam_right_wrist'] = physics.render(height=480, width=640, camera_id='cam_right_wrist')
 
         # used when replaying joint trajectory
         obs['gripper_ctrl'] = physics.data.ctrl.copy()
@@ -163,6 +173,48 @@ class BimanualViperXEETask(base.Task):
 
     def get_reward(self, physics):
         raise NotImplementedError
+
+
+class TowelEETask(BimanualViperXEETask):
+    def __init__(self, random=None):
+        super().__init__(random=random)
+        self.max_reward = 2
+
+    def initialize_episode(self, physics):
+        """Sets the state of the environment at the start of each episode."""
+        self.initialize_robots(physics)
+
+        towel_pose = sample_towel_pose()
+        np.copyto(physics.data.qpos[16 : 16 + 7], towel_pose)
+
+        super().initialize_episode(physics)
+
+    @staticmethod
+    def get_env_state(physics):
+        env_state = physics.data.qpos.copy()[16 : 16 + 7]
+        return env_state
+
+    def get_reward(self, physics):
+        # return whether left gripper is holding the box
+        all_contact_pairs = []
+        for i_contact in range(physics.data.ncon):
+            id_geom_1 = physics.data.contact[i_contact].geom1
+            id_geom_2 = physics.data.contact[i_contact].geom2
+            name_geom_1 = physics.model.id2name(id_geom_1, 'geom')
+            name_geom_2 = physics.model.id2name(id_geom_2, 'geom')
+            contact_pair = (name_geom_1, name_geom_2)
+            all_contact_pairs.append(contact_pair)
+
+        # TODO: modify reward 
+        touch_left_gripper = any(("G" + str(i) + "_" + str(j), "vx300s_left/10_left_gripper_finger") in all_contact_pairs for i in range(9) for j in range(13))
+        touch_right_gripper = any(("G" + str(i) + "_" + str(j), "vx300s_right/10_right_gripper_finger") in all_contact_pairs for i in range(9) for j in range(13))
+
+        reward = 0
+        if touch_left_gripper or touch_right_gripper:
+            reward = 1
+        if touch_left_gripper and touch_right_gripper:
+            reward = 2
+        return reward
 
 
 class CubePnPEETask(BimanualViperXEETask):

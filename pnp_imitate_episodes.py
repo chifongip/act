@@ -11,7 +11,7 @@ from einops import rearrange
 # from constants import DT
 # from constants import PUPPET_GRIPPER_JOINT_OPEN
 from pnp_utils import load_data # data functions
-from pnp_utils import sample_box_pose, sample_insertion_pose, sample_bowl_pose # robot functions
+from pnp_utils import sample_box_pose, sample_insertion_pose, sample_bowl_pose, sample_towel_pose # robot functions
 from pnp_utils import compute_dict_mean, set_seed, detach_dict # helper functions
 from policy import ACTPolicy, CNNMLPPolicy
 from visualize_episodes import save_videos
@@ -21,7 +21,7 @@ from pnp_constants import PUPPET_GRIPPER_JOINT_OPEN
 
 # from sim_env import BOX_POSE
 
-from pnp_sim_env import BOX_POSE, BOWL1_POSE
+from pnp_sim_env import BOX_POSE, BOWL1_POSE, TOWEL_POSE
 
 
 import IPython
@@ -167,7 +167,7 @@ def eval_bc(config, ckpt_name, save_episode=True):
     max_timesteps = config['episode_len']
     task_name = config['task_name']
     temporal_agg = config['temporal_agg']
-    onscreen_cam = 'front_close'
+    onscreen_cam = 'cam_high'
 
     # load policy and stats
     ckpt_path = os.path.join(ckpt_dir, ckpt_name)
@@ -219,6 +219,8 @@ def eval_bc(config, ckpt_name, save_episode=True):
         elif 'sim_cube_pnp' in task_name:
             BOX_POSE[0] = sample_box_pose() # used in sim reset
             BOWL1_POSE[0] = sample_bowl_pose()
+        elif 'sim_towel' in task_name:
+            TOWEL_POSE[0] = sample_towel_pose()
 
         ts = env.reset()
 
@@ -303,12 +305,16 @@ def eval_bc(config, ckpt_name, save_episode=True):
         episode_returns.append(episode_return)
         episode_highest_reward = np.max(rewards)
         highest_rewards.append(episode_highest_reward)
-        print(f'Rollout {rollout_id}\n{episode_return=}, {episode_highest_reward=}, {env_max_reward=}, Success: {episode_highest_reward==env_max_reward}')
-
+        if 'sim_towel' in task_name:
+            print(f'Rollout {rollout_id}\n{episode_return=}, {episode_highest_reward=}, {env_max_reward=}, Success: {episode_return > 250}')
+        else:
+            print(f'Rollout {rollout_id}\n{episode_return=}, {episode_highest_reward=}, {env_max_reward=}, Success: {episode_highest_reward==env_max_reward}')
         # if save_episode:
         #     save_videos(image_list, DT, video_path=os.path.join(ckpt_dir, f'video{rollout_id}.mp4'))
-
-    success_rate = np.mean(np.array(highest_rewards) == env_max_reward)
+    if 'sim_towel' in task_name:
+        success_rate = np.mean(np.array(episode_returns) > 250)
+    else:
+        success_rate = np.mean(np.array(highest_rewards) == env_max_reward)
     avg_return = np.mean(episode_returns)
     summary_str = f'\nSuccess rate: {success_rate}\nAverage return: {avg_return}\n\n'
     for r in range(env_max_reward+1):

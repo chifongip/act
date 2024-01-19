@@ -24,6 +24,7 @@ e = IPython.embed
 
 BOX_POSE = [None] # to be changed from outside
 BOWL1_POSE = [None]
+TOWEL_POSE = [None]
 
 def make_sim_env(task_name):
     """
@@ -59,6 +60,12 @@ def make_sim_env(task_name):
         xml_path = os.path.join(XML_DIR, f'bimanual_viperx_cube_pnp.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
         task = CubePnPTask(random=False)
+        env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
+                                  n_sub_steps=None, flat_observation=False)
+    elif 'sim_towel' in task_name:
+        xml_path = os.path.join(XML_DIR, f'bimanual_viperx_towel.xml')
+        physics = mujoco.Physics.from_xml_path(xml_path)
+        task = TowelTask(random=False)
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     else:
@@ -121,18 +128,67 @@ class BimanualViperXTask(base.Task):
         obs['qvel'] = self.get_qvel(physics)
         obs['env_state'] = self.get_env_state(physics)
         obs['images'] = dict()
-        obs['images']['top'] = physics.render(height=480, width=640, camera_id='top')
+        # obs['images']['top'] = physics.render(height=480, width=640, camera_id='top')
         # obs['images']['angle'] = physics.render(height=480, width=640, camera_id='angle')
         # obs['images']['vis'] = physics.render(height=480, width=640, camera_id='front_close')
-        obs['images']['front_close'] = physics.render(height=480, width=640, camera_id='front_close')
+        # obs['images']['front_close'] = physics.render(height=480, width=640, camera_id='front_close')
         # obs['images']['left_wrist'] = physics.render(height=480, width=640, camera_id='left_wrist')
-        obs['images']['right_wrist'] = physics.render(height=480, width=640, camera_id='right_wrist')
+        # obs['images']['right_wrist'] = physics.render(height=480, width=640, camera_id='right_wrist')
+
+        obs['images']['cam_high'] = physics.render(height=480, width=640, camera_id='cam_high')
+        obs['images']['cam_left_wrist'] = physics.render(height=480, width=640, camera_id='cam_left_wrist')
+        obs['images']['cam_right_wrist'] = physics.render(height=480, width=640, camera_id='cam_right_wrist')
 
         return obs
 
     def get_reward(self, physics):
         # return whether left gripper is holding the box
         raise NotImplementedError
+
+
+class TowelTask(BimanualViperXTask):
+    def __init__(self, random=None):
+        super().__init__(random=random)
+        self.max_reward = 2
+
+    def initialize_episode(self, physics):
+        """Sets the state of the environment at the start of each episode."""
+        # TODO Notice: this function does not randomize the env configuration. Instead, set BOX_POSE from outside
+        # reset qpos, control and box position
+        with physics.reset_context():
+            physics.named.data.qpos[:16] = START_ARM_POSE
+            np.copyto(physics.data.ctrl, START_ARM_POSE)
+            assert TOWEL_POSE[0] is not None
+            physics.named.data.qpos[16 : 16 + 7] = TOWEL_POSE[0]
+            # print(f"{TOWEL_POSE=}")
+        super().initialize_episode(physics)
+
+    @staticmethod
+    def get_env_state(physics):
+        env_state = physics.data.qpos.copy()[16 : 16 + 7]
+        return env_state
+
+    def get_reward(self, physics):
+        # return whether left gripper is holding the box
+        all_contact_pairs = []
+        for i_contact in range(physics.data.ncon):
+            id_geom_1 = physics.data.contact[i_contact].geom1
+            id_geom_2 = physics.data.contact[i_contact].geom2
+            name_geom_1 = physics.model.id2name(id_geom_1, 'geom')
+            name_geom_2 = physics.model.id2name(id_geom_2, 'geom')
+            contact_pair = (name_geom_1, name_geom_2)
+            all_contact_pairs.append(contact_pair)
+
+        # TODO: modify reward 
+        touch_left_gripper = any(("G" + str(i) + "_" + str(j), "vx300s_left/10_left_gripper_finger") in all_contact_pairs for i in range(9) for j in range(13))
+        touch_right_gripper = any(("G" + str(i) + "_" + str(j), "vx300s_right/10_right_gripper_finger") in all_contact_pairs for i in range(9) for j in range(13))
+
+        reward = 0
+        if touch_left_gripper or touch_right_gripper:
+            reward = 1
+        if touch_left_gripper and touch_right_gripper:
+            reward = 2
+        return reward
 
 
 class CubePnPTask(BimanualViperXTask):

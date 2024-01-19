@@ -66,6 +66,60 @@ class BasePolicy:
         return np.concatenate([action_left, action_right])
 
 
+class TowelPolicy(BasePolicy):
+
+    def generate_trajectory(self, ts_first):
+        init_mocap_pose_right = ts_first.observation['mocap_pose_right']
+        init_mocap_pose_left = ts_first.observation['mocap_pose_left']
+
+        towel_info = np.array(ts_first.observation['env_state'])
+        # print(towel_info)
+        
+        # towel_xyz = towel_info[0:3]
+        # towel_quat = towel_info[3:7]
+        # print(f"Generate trajectory for {towel_xyz=}")
+
+        delta_xyz = np.array([towel_info[0], towel_info[1] - 0.6, towel_info[2]])
+       
+
+        left_gripper_pick_quat = Quaternion(init_mocap_pose_right[3:])
+        left_gripper_pick_quat = left_gripper_pick_quat * Quaternion(axis=[0.0, 0.0, 1.0], degrees=45)
+        left_gripper_pick_quat = left_gripper_pick_quat * Quaternion(axis=[0.0, 1.0, 0.0], degrees=30)
+
+        right_gripper_pick_quat = Quaternion(init_mocap_pose_right[3:])
+        right_gripper_pick_quat = right_gripper_pick_quat * Quaternion(axis=[0.0, 0.0, 1.0], degrees=-45)
+        right_gripper_pick_quat = right_gripper_pick_quat * Quaternion(axis=[0.0, 1.0, 0.0], degrees=-30)
+
+        self.left_trajectory = [
+            {"t": 0, "xyz": init_mocap_pose_left[:3], "quat": init_mocap_pose_left[3:], "gripper": 0}, # sleep
+            {"t": 100, "xyz":  delta_xyz + np.array([-0.1,          0.405,        0.1]), "quat": left_gripper_pick_quat.elements, "gripper": 1}, # move to middle pose
+            {"t": 150, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 - 0.005, 0.01 - 0.004]), "quat": left_gripper_pick_quat.elements, "gripper": 1}, # move to towel corner
+            {"t": 180, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 - 0.005, 0.01 - 0.004]), "quat": left_gripper_pick_quat.elements, "gripper": 1}, # move to towel corner
+            {"t": 200, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 - 0.005, 0.01 - 0.004]), "quat": left_gripper_pick_quat.elements, "gripper": 0}, # pick towel
+            {"t": 201, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 - 0.005, 0.01 - 0.004]), "quat": left_gripper_pick_quat.elements, "gripper": 0}, # pick towel
+            {"t": 220, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 - 0.005, 0.01 - 0.004]), "quat": left_gripper_pick_quat.elements, "gripper": 0}, # pick towel
+            {"t": 250, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 + 0.04, 0.01 + 0.05]), "quat": left_gripper_pick_quat.elements, "gripper": 0},  # pick up
+            {"t": 340, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 + 0.36, 0.01 + 0.05]), "quat": left_gripper_pick_quat.elements, "gripper": 0},  # fold towel
+            {"t": 360, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 + 0.36, 0.01 + 0.05]), "quat": left_gripper_pick_quat.elements, "gripper": 1},  # release towel
+            {"t": 380, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 + 0.36, 0.01 + 0.2]), "quat": left_gripper_pick_quat.elements, "gripper": 1},  # move up
+            {"t": 400, "xyz": delta_xyz + np.array([-0.135 - 0.00, 0.405 + 0.36, 0.01 + 0.2]), "quat": left_gripper_pick_quat.elements, "gripper": 1},  # move up
+        ]
+
+        self.right_trajectory = [
+            {"t": 0, "xyz": init_mocap_pose_right[:3], "quat": init_mocap_pose_right[3:], "gripper": 0}, # sleep
+            {"t": 100, "xyz":  delta_xyz + np.array([0.1,          0.405,        0.1]), "quat": right_gripper_pick_quat.elements, "gripper": 1}, # move to middle pose
+            {"t": 150, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 - 0.005, 0.01 - 0.004]), "quat": right_gripper_pick_quat.elements, "gripper": 1}, # move to towel corner
+            {"t": 180, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 - 0.005, 0.01 - 0.004]), "quat": right_gripper_pick_quat.elements, "gripper": 1}, # move to towel corner
+            {"t": 200, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 - 0.005, 0.01 - 0.004]), "quat": right_gripper_pick_quat.elements, "gripper": 0}, # pick towel
+            {"t": 201, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 - 0.005, 0.01 - 0.004]), "quat": right_gripper_pick_quat.elements, "gripper": 0}, # pick towel
+            {"t": 220, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 - 0.005, 0.01 - 0.004]), "quat": right_gripper_pick_quat.elements, "gripper": 0}, # pick towel
+            {"t": 250, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 + 0.04, 0.01 + 0.05]), "quat": right_gripper_pick_quat.elements, "gripper": 0},  # pick up
+            {"t": 340, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 + 0.36, 0.01 + 0.05]), "quat": right_gripper_pick_quat.elements, "gripper": 0},  # fold towel
+            {"t": 360, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 + 0.36, 0.01 + 0.05]), "quat": right_gripper_pick_quat.elements, "gripper": 1},  # release towel
+            {"t": 380, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 + 0.36, 0.01 + 0.2]), "quat": right_gripper_pick_quat.elements, "gripper": 1},  # move up
+            {"t": 400, "xyz": delta_xyz + np.array([0.135 - 0.03, 0.405 + 0.36, 0.01 + 0.2]), "quat": right_gripper_pick_quat.elements, "gripper": 1},  # move up        ]
+        ]
+
 class PnPPolicy(BasePolicy):
 
     def generate_trajectory(self, ts_first):
@@ -217,6 +271,8 @@ def test_policy(task_name):
         env = make_ee_sim_env('sim_insertion')
     elif 'sim_cube_pnp' in task_name:
         env = make_ee_sim_env('sim_cube_pnp')
+    elif 'sim_towel' in task_name:
+        env = make_ee_sim_env('sim_towel')
     else:
         raise NotImplementedError
 
@@ -225,16 +281,16 @@ def test_policy(task_name):
         episode = [ts]
         if onscreen_render:
             ax = plt.subplot()
-            plt_img = ax.imshow(ts.observation['images']['angle'])
+            plt_img = ax.imshow(ts.observation['images']['cam_high'])
             plt.ion()
 
-        policy = PnPPolicy(inject_noise)
+        policy = TowelPolicy(inject_noise)
         for step in range(episode_len):
             action = policy(ts)
             ts = env.step(action)
             episode.append(ts)
             if onscreen_render:
-                plt_img.set_data(ts.observation['images']['angle'])
+                plt_img.set_data(ts.observation['images']['cam_high'])
                 plt.pause(0.02)
         plt.close()
 
@@ -246,6 +302,6 @@ def test_policy(task_name):
 
 
 if __name__ == '__main__':
-    test_task_name = 'sim_cube_pnp'
+    test_task_name = 'sim_towel'
     test_policy(test_task_name)
 

@@ -7,20 +7,16 @@
         <include file="vx300s_left.xml" />
         <include file="vx300s_right.xml" />
 
-        <body name="box" pos="0.2 0.5 0.05">
-            <joint name="red_box_joint" type="free" frictionloss="0.01" />
-            <inertial pos="0 0 0" mass="0.05" diaginertia="0.002 0.002 0.002" />
-            <geom condim="4" solimp="2 1 0.01" solref="0.01 1" friction="1 0.005 0.0001" pos="0 0 0" size="0.02 0.02 0.02" type="box" name="red_box" rgba="1 0 0 1" />
-        </body>
-
-        <body pos="0 0.8 0.02" quat="0 0 0 1">
-            <composite type="grid" count="5 9 1" spacing="0.02" offset="0 0 0">
-                <skin material="mattowel" texcoord="true" inflate="0.02" subgrid="3"/>
+        <body pos="0 0.6 0.01" quat="1 0 0 0">
+            <joint name="towel_joint" type="free" frictionloss="0.9" />
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002" />
+            <composite type="grid" count="9 13 1" spacing="0.03" offset="0 0 0">
+                <skin material="mattowel" texcoord="true" inflate="0.01" subgrid="3"/>
                 <!-- <pin coord="0 0"/>
                 <pin coord="4 0"/>
                 <pin coord="0 8"/>
                 <pin coord="4 8"/> -->
-                <geom size="0.01"/>
+                <geom size="0.01" friction="0.1 0.005 0.0001"/>
             </composite>
         </body>
 
@@ -48,7 +44,8 @@
     </actuator>
 
     <!-- <keyframe>
-        <key qpos="0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0.2 0.5 0.05 1 0 0 0  0 .8 .04 1 0 0 0"/>
+        <key qpos="0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0 -0.96 1.16 0 -0.3 0 0.024 -0.024  0 0.6 0.01 1 0 0 0
+        0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
     </keyframe> -->
 
 
